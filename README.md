@@ -1,4 +1,5 @@
 DirL-BFGS
 
 
-![2024-07-19_113844](https://github.com/user-attachments/assets/1ec9a1e2-68bc-42f7-95b2-c228d786f436)
+
+![_avg_time_plot](https://github.com/user-attachments/assets/43483f97-8d63-4017-af45-9ae2838c0bbc | width=100)
