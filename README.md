@@ -1,9 +1,4 @@
 DirL-BFGS
 
 
-
-
-
-
-
-![_avg_time_plot](<img src="https://github.com/user-attachments/assets/43483f97-8d63-4017-af45-9ae2838c0bbc" width="40"  height="40">)
+![_avg_time_plot - Copy](https://github.com/user-attachments/assets/930c2a98-c50c-44a5-b3a0-2ef571977624)
