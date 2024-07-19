@@ -1,2 +1,3 @@
 DirL-BFGS
-![Uploading _avg_time_plot.png…]()
+
+![_avg_time_plot](https://github.com/user-attachments/assets/d9aef464-8474-41f2-a38e-3d28718600f6)
