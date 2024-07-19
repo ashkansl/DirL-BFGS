@@ -111,7 +111,7 @@ def lbfgs_imp(args, opzer, hs, npp):
                          return_time=True, tolerance_grad=tg, tolerance_change=tc)
     else:
         optimizer = DirLBFGS(model.parameters(), lr=lr, max_iter=1, history_size=hs, preallocate_memory=hs+10,
-                         fast_version=True, update_gamma=True, restart=True, 
+                         fast_version=True, update_gamma=True, restart=False, 
                          return_time=True, tolerance_grad=tg, tolerance_change=tc)
 
    

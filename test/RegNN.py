@@ -71,7 +71,7 @@ def lbfgs_imp(opzer, lr, hs, npp, seeed, time_stop=0):
         optimizer = DirLBFGS(model.parameters(), lr=l_r, 
                          history_size=history_size, preallocate_memory=history_size+10, max_iter=1, 
                          fast_version=True, update_gamma=True, 
-                         line_search_fn=line_search, restart=True, return_time=True) # no wolfe with fast wersion
+                         line_search_fn=line_search, restart=False, return_time=True) # no wolfe with fast wersion
 
 
     n_epochs = npp   # number of epochs to run

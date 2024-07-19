@@ -162,7 +162,7 @@ def two_f():
         #             tolerance_grad=1e-20,
         #             tolerance_change=1e-20,
         #             tolerance_change_gtd = False, 
-        #             restart=True, 
+        #             restart=False, 
         #             max_iter=1,
         #             return_time=True,
         #             debug_time=True)
