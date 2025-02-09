@@ -1,6 +1,6 @@
 # DirL-BFGS
 ## How to use
-Our proposed method, 'DirL-BFGS,' is located in the 'opzer' directory: 
+The implementation of our proposed method, 'DirL-BFGS,' can be found in the 'opzer' directory:
 - dirl_bfgs.py
 - dirl_bfgs_nn.py
   
