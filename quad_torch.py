@@ -5,7 +5,6 @@ import torch.nn as nn
 import numpy as np
 import os
 import sys
-sys.path.append("..")
 
 from opzer.dirl_bfgs import DirLBFGS
 
