@@ -1,7 +1,7 @@
 
 import numpy as np
 import torch
-import python_lbfgsb_cutest as lbfgsb_gpu
+import opzer.python_lbfgsb_cutest as lbfgsb_gpu
 import pycutest
 import time
 

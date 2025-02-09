@@ -3,7 +3,7 @@ import time
 
 # append "optim" path sys.path.append('path/to/torch/optim/')  # TODO
 sys.path.append("/home/user/pyenvs/env1/lib/python3.12/site-packages/torch/optim/")
-
+sys.path.append("/home/sadeghi/python_envs/env2/lib/python3.12/site-packages/torch/optim/")
 
 import torch
 from functools import reduce
@@ -188,7 +188,7 @@ def _strong_wolfe(obj_func,
     return f_new, g_new, t, ls_func_evals
 
 
-class BFGS(Optimizer):
+class LBFGS(Optimizer):
     """Implements L-BFGS algorithm, heavily inspired by `minFunc
     <https://www.cs.ubc.ca/~schmidtm/Software/minFunc.html>`_.
 
@@ -226,11 +226,9 @@ class BFGS(Optimizer):
                  max_eval=None,
                  tolerance_grad=1e-7,
                  tolerance_change=1e-9,
-                 history_size=1,
+                 history_size=100,
                  line_search_fn=None,
-                 init_matrix=None,
-                 return_time=False,
-                 dtype=torch.double):
+                 return_time=False):
         if max_eval is None:
             max_eval = max_iter * 5 // 4
         defaults = dict(
@@ -241,9 +239,7 @@ class BFGS(Optimizer):
             tolerance_change=tolerance_change,
             history_size=history_size,
             line_search_fn=line_search_fn,
-            init_matrix=init_matrix,
-            return_time=return_time,
-            dtype=dtype)
+            return_time=return_time)
         super().__init__(params, defaults)
 
         if len(self.param_groups) != 1:
@@ -314,9 +310,7 @@ class BFGS(Optimizer):
         tolerance_change = group['tolerance_change']
         line_search_fn = group['line_search_fn']
         history_size = group['history_size']
-        init_matrix = group['init_matrix']
         return_time = group['return_time']
-        dtype = group['dtype']
 
         # NOTE: LBFGS has only global state, but we register it as state for
         # the first param, because this helps with casting in load_state_dict
@@ -336,7 +330,7 @@ class BFGS(Optimizer):
 
         # optimal condition
         if opt_cond:
-            return orig_loss, opt_cond
+            return orig_loss, 0
 
         # tensors cached in state (for tracing)
         d = state.get('d')
@@ -347,8 +341,6 @@ class BFGS(Optimizer):
         H_diag = state.get('H_diag')
         prev_flat_grad = state.get('prev_flat_grad')
         prev_loss = state.get('prev_loss')
-        Hk = state.get('Hk')
-        
         # print(f'itr={state["n_iter"]} loss={orig_loss} d={d}')
         n_iter = 0
         # optimize for a max of max_iter iterations
@@ -366,16 +358,16 @@ class BFGS(Optimizer):
                 old_stps = []
                 ro = []
                 H_diag = 1
-                
-                
             else:
                 # do lbfgs update (update memory)
                 y = flat_grad.sub(prev_flat_grad)
                 s = d.mul(t)
                 ys = y.dot(s)  # y*s
                 if ys < 1e-12:
+                    sssssssssssssss = state['n_iter']
+                    # print(f'ssssssssssssssssssssssssssssss- {sssssssssssssss}')
                     sss = 0
-                if ys > 0:
+                if ys > 1e-12:
                     # print(f'lbfgs ys = {ys}')
 
                     # updating memory
@@ -391,11 +383,10 @@ class BFGS(Optimizer):
                     ro.append(1. / ys)
 
                     # update scale of initial Hessian approximation
-                    H_diag = ys / y.dot(y)  # (y*y)
-                    if state['n_iter'] == 2:
-                        Hk = torch.eye(d.shape[0], d.shape[0], device='cuda', dtype=dtype)
-                        Hk = torch.mul(Hk, H_diag)  # H_1_0
-                        # Hk = torch.inverse(init_matrix)
+                    # if state['n_iter'] == 2:
+                    H_diag = ys / y.dot(y)  # (y*y) TODO H_diag in if or before if
+                        # gama = H_diag
+                    # H_diag = ys / y.dot(y)  # (y*y)
 
                 # compute the approximate (L-BFGS) inverse Hessian
                 # multiplied by the gradient
@@ -405,35 +396,19 @@ class BFGS(Optimizer):
                     state['al'] = [None] * history_size
                 al = state['al']
 
-                graddd = flat_grad  
-                ds = d.shape[0]
-                I = torch.eye(d.shape[0], d.shape[0], device='cuda', dtype=dtype)
-            
-                k_indx = -1
-                VV = I - ro[k_indx] * old_dirs[k_indx].reshape(ds, 1) @ old_stps[k_indx].reshape(ds, 1).T
-                H_bfgs = VV.T @ Hk @ VV + ro[k_indx] * old_stps[k_indx].reshape(ds, 1) @ old_stps[k_indx].reshape(ds, 1).T
-                # self.VVHkVV = VV.T @ Hk @ VV
-                # self.roOs2 = ro[k_indx] * old_stps[k_indx].reshape(ds, 1) @ old_stps[k_indx].reshape(ds, 1).T
-                Hk = H_bfgs # H_k_grad_F_k , H_bfgs
-                
-                # Hk = torch.inverse(init_matrix)
-                # Hk = torch.eye(d.shape[0], d.shape[0], device='cuda')
-                
-                r = -Hk @ graddd
-                d = r
                 # iteration in L-BFGS loop collapsed to use just one buffer
                 # ttttt = time.time()
-                # q = flat_grad.neg()
-                # for i in range(num_old - 1, -1, -1):
-                #     al[i] = old_stps[i].dot(q) * ro[i]
-                #     q.add_(old_dirs[i], alpha=-al[i])
+                q = flat_grad.neg()
+                for i in range(num_old - 1, -1, -1):
+                    al[i] = old_stps[i].dot(q) * ro[i]
+                    q.add_(old_dirs[i], alpha=-al[i])
 
-                # # multiply by initial Hessian
-                # # r/d is the final direction
-                # d = r = torch.mul(q, H_diag)
-                # for i in range(num_old):
-                #     be_i = old_dirs[i].dot(r) * ro[i]
-                #     r.add_(old_stps[i], alpha=al[i] - be_i)
+                # multiply by initial Hessian
+                # r/d is the final direction
+                d = r = torch.mul(q, H_diag)
+                for i in range(num_old):
+                    be_i = old_dirs[i].dot(r) * ro[i]
+                    r.add_(old_stps[i], alpha=al[i] - be_i)
                 # print(f'\t {num_old} timeeeeeee={time.time()-ttttt}')
 
             if prev_flat_grad is None:
@@ -455,8 +430,8 @@ class BFGS(Optimizer):
             gtd = flat_grad.dot(d)  # g * d
             d_new = d
             # directional derivative is below tolerance
-            # if gtd > -tolerance_change:
-            #     break
+            if gtd > -tolerance_change:
+                break
 
             # optional line search: user function
             ls_func_evals = 0
@@ -505,11 +480,11 @@ class BFGS(Optimizer):
                 break
 
             # lack of progress
-            # if d.mul(t).abs().max() <= tolerance_change:
-            #     break
+            if d.mul(t).abs().max() <= tolerance_change:
+                break
 
-            # if abs(loss - prev_loss) < tolerance_change:
-            #     break
+            if abs(loss - prev_loss) < tolerance_change:
+                break
 
         state['d'] = d
         state['t'] = t
@@ -519,11 +494,8 @@ class BFGS(Optimizer):
         state['H_diag'] = H_diag
         state['prev_flat_grad'] = prev_flat_grad
         state['prev_loss'] = prev_loss
-        state['Hk'] = Hk
-
         tott = time.time() - tt1
         if return_time :
             return orig_loss, tott
-            
-        return orig_loss , opt_cond # , d_new
-
+        
+        return orig_loss # , d_new

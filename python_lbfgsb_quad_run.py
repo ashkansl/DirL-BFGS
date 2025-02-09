@@ -1,7 +1,7 @@
 
 import numpy as np
 import torch
-import python_lbfgsb_quad as lbfgsb_gpu
+import opzer.python_lbfgsb_quad as lbfgsb_gpu
 import time
 import torch
 import matplotlib.pyplot as plt
@@ -59,7 +59,7 @@ quad_samples = int(w_name.split('s')[0].split('_')[-1])
 
 load_q = 1
 
-quad_path = './data/quad/'
+quad_path = './data/'
 w_name = quad_path + w_name
 y_name = quad_path + y_name
 allw = w(Variable(torch.load(w_name)))
