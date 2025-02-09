@@ -1,11 +1,11 @@
 # DirL-BFGS
 ## How to use
-Our proposed method "DirL-BFGS" is in "opzer" directory: 
+Our proposed method, 'DirL-BFGS,' is located in the 'opzer' directory: 
 - dirl_bfgs.py
 - dirl_bfgs_nn.py
   
-In "dirl_bfgs_nn.py" we optimize implementation for neural networks.
-Our codes are based on PyTorch library. So at fisrt you shoule install PyTorch with pip or Conda command. Then you should add optim directory of PyTorch library to "dirl_bfgs.py" like this:
+In dirl_bfgs_nn.py, we optimize the implementation for neural networks.
+Our code is built on the PyTorch library. To get started, you need to install PyTorch using either pip or conda. After installation, add the optim directory of the PyTorch library to dirl_bfgs.py as shown below:
 
 ``` sys.path.append("/home/user/pyenvs/env1/lib/python3.12/site-packages/torch/optim/")  ```
 
